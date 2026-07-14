@@ -1,0 +1,169 @@
+:root {
+    --bg-dark: #0f1115;
+    --text-light: #ffffff;
+    --text-muted: #8b949e;
+    --accent: #00e5ff;
+    --glass-bg: rgba(15, 17, 21, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    overflow-x: hidden;
+}
+
+/* Map Container */
+#map {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    /* Ein sanfter Gradient, um den Übergang zum Text eleganter zu machen */
+    mask-image: linear-gradient(to right, transparent 5%, black 40%);
+    -webkit-mask-image: linear-gradient(to right, transparent 5%, black 40%);
+}
+
+/* Story Overlay */
+#story {
+    position: relative;
+    z-index: 2;
+    padding: 0 5vw;
+    pointer-events: none; /* Klicks auf die Karte durchlassen, falls doch mal nötig, aber Scrollen wird von section gefangen */
+}
+
+.step {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 500px;
+    opacity: 0.2;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.step.is-active {
+    opacity: 1;
+}
+
+.content {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    padding: 2.5rem;
+    border-radius: 16px;
+    pointer-events: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-light);
+}
+
+p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #c9d1d9;
+    margin-bottom: 1rem;
+}
+
+p:last-child {
+    margin-bottom: 0;
+}
+
+.scroll-hint {
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: pulse 2s infinite;
+}
+
+/* Time Display UI */
+#time-display {
+    position: fixed;
+    top: 2rem;
+    right: 3rem;
+    z-index: 10;
+    font-size: 4rem;
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(5px); }
+    100% { opacity: 0.5; transform: translateY(0); }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    #map {
+        /* Fadet die Karte unten weich aus, wo der Text liegt */
+        mask-image: linear-gradient(to top, transparent 2%, black 45%);
+        -webkit-mask-image: linear-gradient(to top, transparent 2%, black 45%);
+    }
+    
+    #story {
+        padding: 0 1rem;
+    }
+    
+    .step {
+        justify-content: flex-end;
+        padding-bottom: 2rem;
+        max-width: 100%;
+    }
+
+    .content {
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    p {
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+    
+    #time-display {
+        top: 1rem;
+        right: 1rem;
+        font-size: 2rem;
+    }
+}

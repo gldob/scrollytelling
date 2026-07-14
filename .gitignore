@@ -1,0 +1,17 @@
+# Python Virtual Environment
+.venv/
+__pycache__/
+
+# Raw and Filtered Data (Too large for Git)
+gtfs_raw/
+gtfs_filtered/
+*.zip
+
+# Obsolete Frontend Data
+routen.geojson
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+*.pyc

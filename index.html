@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Von früh bis spät: Die Rottal Auto AG</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- MapLibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet" />
+
+    <!-- Scrollama -->
+    <script src="https://unpkg.com/scrollama"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="time-display">--:--</div>
+
+    <div id="map"></div>
+
+    <main id="story">
+        <section class="step" data-time="04:00" data-minutes="240" data-zoom="12.5" data-lat="47.11" data-lng="8.10"
+            data-pitch="45" data-bearing="10">
+            <div class="content">
+                <h1>Von früh bis spät</h1>
+                <p>Ein typischer Freitag im Netz der Rottal Auto AG. Noch ist es ruhig in der Region um Sursee und
+                    Ruswil. Die Busse stehen in den Depots bereit für den neuen Tag.</p>
+                <p class="scroll-hint">Scrolle nach unten</p>
+            </div>
+        </section>
+
+        <section class="step" data-time="04:36" data-minutes="276" data-zoom="11.5" data-lat="47.08" data-lng="8.12"
+            data-pitch="50" data-bearing="25">
+            <div class="content">
+                <h2>Das Erwachen</h2>
+                <p>Um 04:36 Uhr verlässt der erste Bus das Depot. Die Linie 64 nimmt den Betrieb auf. Kurz darauf folgen
+                    die Linien 212 und 61. Die Frühschicht ist unterwegs.</p>
+            </div>
+        </section>
+
+        <section class="step" data-time="06:30" data-minutes="390" data-zoom="11.2" data-lat="47.11" data-lng="8.12"
+            data-pitch="20" data-bearing="-10">
+            <div class="content">
+                <h2>Die Morgenspitze</h2>
+                <p>Gegen 6:30 Uhr ist das gesamte reguläre Netz erwacht. Die Linien 60, 62, 63, 65, 66 und 111
+                    pulsieren. Tausende Pendler und Schüler sind gleichzeitig unterwegs.</p>
+            </div>
+        </section>
+
+        <section class="step" data-time="12:00" data-minutes="720" data-zoom="10.8" data-lat="47.12" data-lng="8.15"
+            data-pitch="0" data-bearing="0">
+            <div class="content">
+                <h2>Mittagszeit im Rottal</h2>
+                <p>Der Takt bleibt hoch. Über die Mittagszeit verteilt das Netz der Rottal Auto AG die Menschen in alle
+                    Himmelsrichtungen. Das Kernnetz arbeitet auf Hochtouren.</p>
+            </div>
+        </section>
+
+        <section class="step" data-time="17:30" data-minutes="1050" data-zoom="11.0" data-lat="47.10" data-lng="8.10"
+            data-pitch="30" data-bearing="15">
+            <div class="content">
+                <h2>Der Feierabend</h2>
+                <p>Die Sonne neigt sich, doch der Verkehr erreicht seinen zweiten Höhepunkt. Die Busse bringen die
+                    Bevölkerung nach einem langen Tag sicher zurück in ihre Wohngemeinden.</p>
+            </div>
+        </section>
+
+        <section class="step" data-time="03:00" data-minutes="1620" data-zoom="11.5" data-lat="47.09" data-lng="8.15"
+            data-pitch="60" data-bearing="-20">
+            <div class="content">
+                <h2>Die Nachtschwärmer</h2>
+                <p>Es ist tief in der Nacht, 03:00 Uhr morgens. Das reguläre Netz ruht sich für den nächsten Tag aus.
+                    Doch für die Nachtschwärmer glühen nun die Nachtlinien N60 und N63 auf und bringen sie sicher nach
+                    Hause.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

@@ -15,12 +15,17 @@ map.addControl(new maplibregl.AttributionControl({
 
 const scroller = scrollama();
 const timeDisplay = document.getElementById('time-display');
+const isMobile = window.innerWidth <= 768;
 
 let allTrips = [];
 let targetMinutes = 240; // 04:00
 let currentMinutes = 240;
 const speed = 15; // Simulationsgeschwindigkeit (Minuten pro Sekunde)
 let animationStarted = false;
+
+// FPS Throttling Variablen für Mobile
+let lastFrameTime = 0;
+const fpsInterval = 1000 / 30; // Ziel: 30 FPS auf dem Smartphone
 
 // Format-Hilfsfunktion für die Uhrzeit
 function formatTime(minutes) {
@@ -78,26 +83,28 @@ map.on('load', () => {
         }
     });
     
-    // Glow-Effekt für die Linien
-    map.addLayer({
-        id: 'trips-glow',
-        type: 'line',
-        source: 'trips-source',
-        layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-        },
-        paint: {
-            'line-width': [
-                'interpolate', ['linear'], ['zoom'],
-                10, 6,
-                14, 18
-            ],
-            'line-color': '#00e5ff',
-            'line-opacity': 0, // Wird animiert
-            'line-blur': 10
-        }
-    });
+    // Glow-Effekt für die Linien (Performance-Tweak: Nur auf Desktop)
+    if (!isMobile) {
+        map.addLayer({
+            id: 'trips-glow',
+            type: 'line',
+            source: 'trips-source',
+            layout: {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            paint: {
+                'line-width': [
+                    'interpolate', ['linear'], ['zoom'],
+                    10, 6,
+                    14, 18
+                ],
+                'line-color': '#00e5ff',
+                'line-opacity': 0, // Wird animiert
+                'line-blur': 10
+            }
+        });
+    }
 
     // Leere Source für die Fahrzeuge
     map.addSource('vehicles', {
@@ -124,22 +131,24 @@ map.on('load', () => {
         }
     });
     
-    // Glow-Effekt für die Fahrzeuge
-    map.addLayer({
-        id: 'vehicles-glow',
-        type: 'circle',
-        source: 'vehicles',
-        paint: {
-            'circle-radius': [
-                'interpolate', ['linear'], ['zoom'],
-                10, 6,
-                14, 15
-            ],
-            'circle-color': '#ffea00', // Leuchtendes Gelb
-            'circle-opacity': 0.6,
-            'circle-blur': 0.8
-        }
-    }, 'vehicles-layer');
+    // Glow-Effekt für die Fahrzeuge (Performance-Tweak: Nur auf Desktop)
+    if (!isMobile) {
+        map.addLayer({
+            id: 'vehicles-glow',
+            type: 'circle',
+            source: 'vehicles',
+            paint: {
+                'circle-radius': [
+                    'interpolate', ['linear'], ['zoom'],
+                    10, 6,
+                    14, 15
+                ],
+                'circle-color': '#ffea00', // Leuchtendes Gelb
+                'circle-opacity': 0.6,
+                'circle-blur': 0.8
+            }
+        }, 'vehicles-layer');
+    }
 
     // Daten in den RAM laden
     fetch('./trips.geojson')
@@ -178,8 +187,7 @@ function handleStepEnter(response) {
     const pitch = parseFloat(el.getAttribute('data-pitch'));
     const bearing = parseFloat(el.getAttribute('data-bearing'));
 
-    // Mobile Zoom-Anpassung (Hochformat benötigt etwas mehr "Luft" an den Seiten)
-    const isMobile = window.innerWidth <= 768;
+    // Mobile Zoom-Anpassung (bereits via Konstante verfügbar)
     if (isMobile) {
         zoom = zoom - 0.8;
     }
@@ -199,17 +207,29 @@ function handleStepEnter(response) {
     });
 }
 
-function animateVehicles() {
+function animateVehicles(timestamp) {
+    // Nächsten Frame anfordern (wird immer aufgerufen, um den Loop am Leben zu halten)
+    requestAnimationFrame(animateVehicles);
+
+    // FPS-Throttling für Mobile
+    if (isMobile) {
+        if (!timestamp) timestamp = performance.now();
+        const elapsed = timestamp - lastFrameTime;
+        if (elapsed < fpsInterval) return; // Überspringe Frame, wenn noch nicht 33ms (30fps) vergangen sind
+        lastFrameTime = timestamp - (elapsed % fpsInterval);
+    }
+
     // Interpoliere currentMinutes sanft in Richtung targetMinutes
     if (Math.abs(targetMinutes - currentMinutes) > 0.1) {
         const direction = targetMinutes > currentMinutes ? 1 : -1;
         const diff = Math.abs(targetMinutes - currentMinutes);
         
-        // Wenn die Distanz sehr groß ist (z.B. harter Scroll über mehrere Sections), 
-        // beschleunigen wir, um nicht ewig zu warten.
+        // Wenn die Distanz sehr groß ist, beschleunigen wir
         const dynamicSpeed = diff > 60 ? speed * 3 : speed; 
         
-        currentMinutes += direction * (dynamicSpeed / 60);
+        // Multiplikator anpassen, da der Loop auf Mobile nur noch halb so oft feuert
+        const timeFactor = isMobile ? 2 : 1;
+        currentMinutes += direction * ((dynamicSpeed * timeFactor) / 60);
         
         // Overshoot protection
         if ((direction === 1 && currentMinutes > targetMinutes) || 
@@ -222,7 +242,7 @@ function animateVehicles() {
 
     const activePoints = [];
 
-    // Gehe durch alle Trips und prüfe, welche gerade unterwegs sind
+    // Gehe durch alle Trips
     for (const trip of allTrips) {
         const props = trip.properties;
         if (currentMinutes >= props.start_time && currentMinutes <= props.end_time) {
@@ -257,22 +277,21 @@ function animateVehicles() {
             ['all', 
                 ['<=', ['get', 'start_time'], currentMinutes],
                 ['>=', ['get', 'end_time'], currentMinutes]
-            ], 0.5, // Leichte Transparenz, da mehrere Fahrten auf derselben Linie liegen können
+            ], 0.5,
             0
         ]);
         
-        map.setPaintProperty('trips-glow', 'line-opacity', [
-            'case',
-            ['all', 
-                ['<=', ['get', 'start_time'], currentMinutes],
-                ['>=', ['get', 'end_time'], currentMinutes]
-            ], 0.2,
-            0
-        ]);
+        if (!isMobile) {
+            map.setPaintProperty('trips-glow', 'line-opacity', [
+                'case',
+                ['all', 
+                    ['<=', ['get', 'start_time'], currentMinutes],
+                    ['>=', ['get', 'end_time'], currentMinutes]
+                ], 0.2,
+                0
+            ]);
+        }
     }
-
-    // Nächsten Frame anfordern
-    requestAnimationFrame(animateVehicles);
 }
 
 window.addEventListener('resize', scroller.resize);

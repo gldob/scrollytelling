@@ -128,9 +128,9 @@ p:last-child {
 /* Mobile Adjustments */
 @media (max-width: 768px) {
     #map {
-        /* Fadet die Karte unten weich aus, wo der Text liegt */
-        mask-image: linear-gradient(to top, transparent 2%, black 45%);
-        -webkit-mask-image: linear-gradient(to top, transparent 2%, black 45%);
+        /* Schwere mask-image Effekte entfernt für bessere Performance */
+        mask-image: none;
+        -webkit-mask-image: none;
     }
     
     #story {
@@ -146,6 +146,10 @@ p:last-child {
     .content {
         padding: 1.5rem;
         border-radius: 12px;
+        /* Blur entfernen und soliden Hintergrund setzen für GPU-Entlastung */
+        background: rgba(15, 17, 21, 0.95);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
     }
 
     h1 {

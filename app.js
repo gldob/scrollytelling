@@ -180,6 +180,7 @@ map.on('load', () => {
                 bar.className = 'bar';
                 const height = Math.max(5, (count / maxTrips) * 100);
                 bar.style.height = `${height}%`;
+                bar.setAttribute('data-count', count);
 
                 const hourOfDay = (i + 4) % 24;
                 const nextHourOfDay = (i + 5) % 24;
@@ -294,13 +295,22 @@ function animateVehicles(timestamp) {
     // Aktualisiere Graph
     const currentHourBucket = Math.floor(currentMinutes / 60) - 4;
     const bars = document.querySelectorAll('#trip-graph .bar');
+    let activeCount = 0;
+    
     bars.forEach((bar, index) => {
         if (index === currentHourBucket) {
             bar.classList.add('active');
+            const count = bar.getAttribute('data-count');
+            if (count) activeCount = count;
         } else {
             bar.classList.remove('active');
         }
     });
+
+    const activeConnectionsDisplay = document.getElementById('active-connections');
+    if (activeConnectionsDisplay) {
+        activeConnectionsDisplay.textContent = activeCount;
+    }
 
     const activePoints = [];
 

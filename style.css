@@ -116,6 +116,20 @@ p:last-child {
     align-items: flex-end;
     gap: 0.5rem;
     pointer-events: none;
+    background: rgba(10, 12, 15, 0.85);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+#active-connections {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 1.2em;
+    margin-left: 5px;
 }
 
 #time-display {
@@ -134,10 +148,12 @@ p:last-child {
     height: 40px;
     gap: 3px;
     pointer-events: auto; /* Tooltips & Hover */
+    margin-top: 5px;
 }
 
 .bar {
-    width: 6px;
+    position: relative;
+    width: 8px;
     background-color: rgba(255, 255, 255, 0.15);
     border-radius: 3px;
     transition: background-color 0.3s, height 0.3s, box-shadow 0.3s;
@@ -150,6 +166,14 @@ p:last-child {
 
 .bar:hover {
     background-color: #ffffff;
+}
+
+.ui-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: -5px;
 }
 
 @keyframes pulse {

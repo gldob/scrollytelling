@@ -207,17 +207,28 @@ function handleStepEnter(response) {
     });
 }
 
+let lastUpdateTime = 0;
+
 function animateVehicles(timestamp) {
     // Nächsten Frame anfordern (wird immer aufgerufen, um den Loop am Leben zu halten)
     requestAnimationFrame(animateVehicles);
 
+    if (!timestamp) timestamp = performance.now();
+
     // FPS-Throttling für Mobile
     if (isMobile) {
-        if (!timestamp) timestamp = performance.now();
         const elapsed = timestamp - lastFrameTime;
         if (elapsed < fpsInterval) return; // Überspringe Frame, wenn noch nicht 33ms (30fps) vergangen sind
         lastFrameTime = timestamp - (elapsed % fpsInterval);
     }
+
+    // Berechne Delta Time in Sekunden für frame-unabhängige Animation
+    if (lastUpdateTime === 0) lastUpdateTime = timestamp;
+    let deltaTime = (timestamp - lastUpdateTime) / 1000;
+    lastUpdateTime = timestamp;
+
+    // Limitiere deltaTime bei inaktivem Tab, um massive Sprünge zu vermeiden
+    if (deltaTime > 0.5) deltaTime = 0.5;
 
     // Interpoliere currentMinutes sanft in Richtung targetMinutes
     if (Math.abs(targetMinutes - currentMinutes) > 0.1) {
@@ -227,9 +238,8 @@ function animateVehicles(timestamp) {
         // Wenn die Distanz sehr groß ist, beschleunigen wir
         const dynamicSpeed = diff > 60 ? speed * 3 : speed; 
         
-        // Multiplikator anpassen, da der Loop auf Mobile nur noch halb so oft feuert
-        const timeFactor = isMobile ? 2 : 1;
-        currentMinutes += direction * ((dynamicSpeed * timeFactor) / 60);
+        // Zeit basierend auf echter verstrichener Zeit aktualisieren
+        currentMinutes += direction * (dynamicSpeed * deltaTime);
         
         // Overshoot protection
         if ((direction === 1 && currentMinutes > targetMinutes) || 

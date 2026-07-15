@@ -105,18 +105,50 @@ p:last-child {
 }
 
 /* Time Display UI */
-#time-display {
+#time-container {
     position: fixed;
     top: 2rem;
     right: 3rem;
     z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+#time-display {
     font-size: 4rem;
     font-weight: 300;
     font-variant-numeric: tabular-nums;
+    line-height: 1;
     color: var(--accent);
     text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
-    pointer-events: none;
     transition: all 0.3s ease;
+}
+
+#trip-graph {
+    display: flex;
+    align-items: flex-end;
+    height: 40px;
+    gap: 3px;
+    pointer-events: auto; /* Tooltips & Hover */
+}
+
+.bar {
+    width: 6px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    transition: background-color 0.3s, height 0.3s, box-shadow 0.3s;
+}
+
+.bar.active {
+    background-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+}
+
+.bar:hover {
+    background-color: #ffffff;
 }
 
 @keyframes pulse {
@@ -165,9 +197,12 @@ p:last-child {
         line-height: 1.5;
     }
     
-    #time-display {
+    #time-container {
         top: 1rem;
         right: 1rem;
+    }
+    
+    #time-display {
         font-size: 2rem;
     }
 }

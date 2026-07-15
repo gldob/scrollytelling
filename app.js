@@ -208,7 +208,7 @@ function setStepHeights() {
             nextMinutes = currentMinutes + 120; // 2 hours for the last step
         }
         const diff = nextMinutes - currentMinutes;
-        const height = diff * (isMobile ? 12 : 15);
+        const height = diff * (isMobile ? 5 : 8);
         step.style.height = `max(100vh, ${height}px)`;
     });
 }

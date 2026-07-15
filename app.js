@@ -237,6 +237,20 @@ function handleStepEnter(response) {
     });
 }
 
+function handleStepProgress(response) {
+    const el = response.element;
+    const currentStepMinutes = parseInt(el.getAttribute('data-minutes'), 10);
+    
+    let nextStepMinutes = currentStepMinutes;
+    const nextEl = el.nextElementSibling;
+    if (nextEl && nextEl.classList.contains('step')) {
+        nextStepMinutes = parseInt(nextEl.getAttribute('data-minutes'), 10);
+    }
+    
+    // Berechne die Ziel-Zeitpunkte fliessend basierend auf dem Scroll-Fortschritt
+    targetMinutes = currentStepMinutes + (nextStepMinutes - currentStepMinutes) * response.progress;
+}
+
 function animateVehicles(timestamp) {
     // Nächsten Frame anfordern
     requestAnimationFrame(animateVehicles);
@@ -250,31 +264,12 @@ function animateVehicles(timestamp) {
         lastFrameTime = timestamp - (elapsed % fpsInterval);
     }
 
-    // Berechne Delta Time in Sekunden für frame-unabhängige Animation
-    if (lastUpdateTime === 0) lastUpdateTime = timestamp;
-    let deltaTime = (timestamp - lastUpdateTime) / 1000;
-    lastUpdateTime = timestamp;
-
-    // Limitiere deltaTime bei inaktivem Tab, um massive Sprünge zu vermeiden
-    if (deltaTime > 0.5) deltaTime = 0.5;
-
-    // Interpoliere currentMinutes sanft in Richtung targetMinutes
-    if (Math.abs(targetMinutes - currentMinutes) > 0.1) {
-        const direction = targetMinutes > currentMinutes ? 1 : -1;
-        const diff = Math.abs(targetMinutes - currentMinutes);
-
-        // Wenn die Distanz sehr groß ist, beschleunigen wir
-        const dynamicSpeed = diff > 60 ? speed * 3 : speed;
-
-        // Multiplikator anpassen, da der Loop auf Mobile nur noch halb so oft feuert
-        const timeFactor = isMobile ? 2 : 1;
-        currentMinutes += direction * ((dynamicSpeed * timeFactor) / 60);
-
-        // Overshoot protection
-        if ((direction === 1 && currentMinutes > targetMinutes) ||
-            (direction === -1 && currentMinutes < targetMinutes)) {
-            currentMinutes = targetMinutes;
-        }
+    // Fliessende Interpolation (Easing) von currentMinutes zu targetMinutes
+    if (Math.abs(targetMinutes - currentMinutes) > 0.05) {
+        const easingFactor = isMobile ? 0.3 : 0.15;
+        currentMinutes += (targetMinutes - currentMinutes) * easingFactor;
+    } else {
+        currentMinutes = targetMinutes;
     }
 
     timeDisplay.textContent = formatTime(Math.floor(currentMinutes));

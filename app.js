@@ -47,7 +47,7 @@ function getInterpolatedPosition(coords, times, currentMinute) {
 
             const lon = startCoord[0] + (endCoord[0] - startCoord[0]) * progress;
             const lat = startCoord[1] + (endCoord[1] - startCoord[1]) * progress;
-            
+
             return [lon, lat];
         }
     }
@@ -82,7 +82,7 @@ map.on('load', () => {
             'line-blur': 1
         }
     });
-    
+
     // Glow-Effekt für die Linien (Performance-Tweak: Nur auf Desktop)
     if (!isMobile) {
         map.addLayer({
@@ -130,7 +130,7 @@ map.on('load', () => {
             'circle-opacity': 1
         }
     });
-    
+
     // Glow-Effekt für die Fahrzeuge (Performance-Tweak: Nur auf Desktop)
     if (!isMobile) {
         map.addLayer({
@@ -155,16 +155,16 @@ map.on('load', () => {
         .then(response => response.json())
         .then(data => {
             allTrips = data.features;
-            
+
             // Graph generieren (04:00 bis 27:59)
             const graphContainer = document.getElementById('trip-graph');
             const tripHistogram = new Array(24).fill(0);
-            
+
             allTrips.forEach(trip => {
                 const props = trip.properties;
                 const startH = Math.floor(props.start_time / 60);
                 const endH = Math.floor(props.end_time / 60);
-                
+
                 for (let h = startH; h <= endH; h++) {
                     const bucket = h - 4;
                     if (bucket >= 0 && bucket < 24) {
@@ -174,22 +174,22 @@ map.on('load', () => {
             });
 
             const maxTrips = Math.max(...tripHistogram, 1);
-            
+
             tripHistogram.forEach((count, i) => {
                 const bar = document.createElement('div');
                 bar.className = 'bar';
                 const height = Math.max(5, (count / maxTrips) * 100);
                 bar.style.height = `${height}%`;
-                
+
                 const hourOfDay = (i + 4) % 24;
                 const nextHourOfDay = (i + 5) % 24;
                 bar.title = `${hourOfDay.toString().padStart(2, '0')}:00 - ${nextHourOfDay.toString().padStart(2, '0')}:00 Uhr: ${count} aktive Fahrzeuge`;
-                
+
                 graphContainer.appendChild(bar);
             });
 
             initScrollama();
-            
+
             if (!animationStarted) {
                 animationStarted = true;
                 requestAnimationFrame(animateVehicles);
@@ -237,40 +237,44 @@ function handleStepEnter(response) {
     });
 }
 
-function handleStepProgress(response) {
-    const el = response.element;
-    const currentStepMinutes = parseInt(el.getAttribute('data-minutes'), 10);
-    
-    let nextStepMinutes = currentStepMinutes;
-    const nextEl = el.nextElementSibling;
-    if (nextEl && nextEl.classList.contains('step')) {
-        nextStepMinutes = parseInt(nextEl.getAttribute('data-minutes'), 10);
-    }
-    
-    // Berechne die Ziel-Zeitpunkte fliessend basierend auf dem Scroll-Fortschritt (0.0 bis 1.0)
-    targetMinutes = currentStepMinutes + (nextStepMinutes - currentStepMinutes) * response.progress;
-}
-
 function animateVehicles(timestamp) {
     // Nächsten Frame anfordern
     requestAnimationFrame(animateVehicles);
 
+    if (!timestamp) timestamp = performance.now();
+
     // FPS-Throttling für Mobile
     if (isMobile) {
-        if (!timestamp) timestamp = performance.now();
         const elapsed = timestamp - lastFrameTime;
-        if (elapsed < fpsInterval) return; 
+        if (elapsed < fpsInterval) return;
         lastFrameTime = timestamp - (elapsed % fpsInterval);
     }
 
-    // Fliessende Interpolation (Easing) von currentMinutes zu targetMinutes
-    if (Math.abs(targetMinutes - currentMinutes) > 0.05) {
-        // Annäherung um 15% pro Frame sorgt für eine flüssige, weiche Bewegung (Spring-Effekt)
-        // Bei Mobile (30fps) verdoppeln wir den Faktor leicht, um das gleiche Gefühl zu erhalten
-        const easingFactor = isMobile ? 0.3 : 0.15;
-        currentMinutes += (targetMinutes - currentMinutes) * easingFactor;
-    } else {
-        currentMinutes = targetMinutes;
+    // Berechne Delta Time in Sekunden für frame-unabhängige Animation
+    if (lastUpdateTime === 0) lastUpdateTime = timestamp;
+    let deltaTime = (timestamp - lastUpdateTime) / 1000;
+    lastUpdateTime = timestamp;
+
+    // Limitiere deltaTime bei inaktivem Tab, um massive Sprünge zu vermeiden
+    if (deltaTime > 0.5) deltaTime = 0.5;
+
+    // Interpoliere currentMinutes sanft in Richtung targetMinutes
+    if (Math.abs(targetMinutes - currentMinutes) > 0.1) {
+        const direction = targetMinutes > currentMinutes ? 1 : -1;
+        const diff = Math.abs(targetMinutes - currentMinutes);
+
+        // Wenn die Distanz sehr groß ist, beschleunigen wir
+        const dynamicSpeed = diff > 60 ? speed * 3 : speed;
+
+        // Multiplikator anpassen, da der Loop auf Mobile nur noch halb so oft feuert
+        const timeFactor = isMobile ? 2 : 1;
+        currentMinutes += direction * ((dynamicSpeed * timeFactor) / 60);
+
+        // Overshoot protection
+        if ((direction === 1 && currentMinutes > targetMinutes) ||
+            (direction === -1 && currentMinutes < targetMinutes)) {
+            currentMinutes = targetMinutes;
+        }
     }
 
     timeDisplay.textContent = formatTime(Math.floor(currentMinutes));
@@ -293,8 +297,8 @@ function animateVehicles(timestamp) {
         const props = trip.properties;
         if (currentMinutes >= props.start_time && currentMinutes <= props.end_time) {
             const currentPos = getInterpolatedPosition(
-                trip.geometry.coordinates, 
-                props.times, 
+                trip.geometry.coordinates,
+                props.times,
                 currentMinutes
             );
 
@@ -320,17 +324,17 @@ function animateVehicles(timestamp) {
     if (map.getSource('trips-source')) {
         map.setPaintProperty('trips-layer', 'line-opacity', [
             'case',
-            ['all', 
+            ['all',
                 ['<=', ['get', 'start_time'], currentMinutes],
                 ['>=', ['get', 'end_time'], currentMinutes]
             ], 0.5,
             0
         ]);
-        
+
         if (!isMobile) {
             map.setPaintProperty('trips-glow', 'line-opacity', [
                 'case',
-                ['all', 
+                ['all',
                     ['<=', ['get', 'start_time'], currentMinutes],
                     ['>=', ['get', 'end_time'], currentMinutes]
                 ], 0.2,

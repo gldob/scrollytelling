@@ -42,10 +42,11 @@ body {
 }
 
 .step {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-top: 35vh;
     align-items: flex-start;
     max-width: 500px;
     opacity: 0.2;
@@ -170,7 +171,8 @@ p:last-child {
     }
     
     .step {
-        justify-content: flex-end;
+        justify-content: flex-start;
+        padding-top: 65vh;
         padding-bottom: 2rem;
         max-width: 100%;
     }

@@ -197,7 +197,24 @@ map.on('load', () => {
         });
 });
 
+function setStepHeights() {
+    const steps = document.querySelectorAll('.step');
+    steps.forEach((step, index) => {
+        const currentMinutes = parseInt(step.getAttribute('data-minutes'), 10);
+        let nextMinutes;
+        if (index < steps.length - 1) {
+            nextMinutes = parseInt(steps[index + 1].getAttribute('data-minutes'), 10);
+        } else {
+            nextMinutes = currentMinutes + 120; // 2 hours for the last step
+        }
+        const diff = nextMinutes - currentMinutes;
+        const height = diff * (isMobile ? 12 : 15);
+        step.style.height = `max(100vh, ${height}px)`;
+    });
+}
+
 function initScrollama() {
+    setStepHeights();
     scroller
         .setup({
             step: '.step',
